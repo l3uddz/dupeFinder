@@ -1,0 +1,2 @@
+curio==0.4
+guessit==2.1.1
