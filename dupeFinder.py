@@ -52,10 +52,18 @@ async def process_file(file):
 
                 if file_info['type'] == 'episode':
                     if 'alternative_title' in file_info:
-                        key = "{0}{1}{2}x{3}".format(file_info['title'].lower(), file_info['alternative_title'].lower(),
-                                                     file_info['season'], file_info['episode'])
+                        key = "{0}{1}".format(file_info['title'].lower(), file_info['alternative_title'].lower())
                     else:
-                        key = "{0}{1}x{2}".format(file_info['title'].lower(), file_info['season'], file_info['episode'])
+                        key = "{0}".format(file_info['title'].lower())
+
+                    if 'season' in file_info and 'episode' in file_info:
+                        key += "{0}x{1}".format(file_info['season'], file_info['episode'])
+                    elif 'date' in file_info:
+                        key += str(file_info['date'])
+                    else:
+                        logger.debug("Not sure how to process this episode: %s", file)
+                        return None
+
                     if 'country' in file_info:
                         key += str(file_info['country'])
 
@@ -117,20 +125,25 @@ if __name__ == "__main__":
     results = curio.run(find_dupes(folder), with_monitor=True)
     time_taken = timeit.default_timer() - start_time
 
-    logger.debug("Finished looking for dupes!\n\n")
+    logger.debug("Finished looking for dupes!\n")
     logger.debug("Time taken: %d seconds", time_taken)
     logger.debug("Skipped non videos: %d", len(non_videos))
     logger.debug("Videos scanned: %d", len(files) + len(dupes))
     logger.debug("Non duplicates: %d", len(files))
-    logger.debug("Duplicates: %d\n\n", len(dupes))
+    logger.debug("Duplicates: %d\n", len(dupes))
 
     if len(dupes):
-        logger.debug("Dupes:")
-        for file, dupe_of in dupes.items():
-            logger.debug("%s is a duplicate of %s", file, dupe_of)
-        logger.debug("\n\n")
+        logger.debug("Dupes (Oldest):")
+        for dupe, first in dupes.items():
+            dupe_time = os.path.getmtime(dupe)
+            first_time = os.path.getmtime(first)
+
+            if dupe_time >= first_time:
+                logger.debug("%s", first)
+            else:
+                logger.debug("%s", dupe)
 
     if len(exceptions):
         logger.debug("Couldn't process:")
-        for file in exceptions:
-            logger.debug(file)
+        for dupe in exceptions:
+            logger.debug(dupe)
