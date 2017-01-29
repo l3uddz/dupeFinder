@@ -34,7 +34,7 @@ logger.setLevel(logging.DEBUG)
 # Variables
 files = {}
 dupes = {}
-exceptions = []
+unprocessed = []
 non_videos = []
 
 
@@ -62,6 +62,7 @@ async def process_file(file):
                         key += str(file_info['date'])
                     else:
                         logger.debug("Not sure how to process this episode: %s", file)
+                        unprocessed.append(file)
                         return None
 
                     if 'country' in file_info:
@@ -76,7 +77,7 @@ async def process_file(file):
 
                 else:
                     logger.debug("Not sure how to process: %s", file)
-                    exceptions.append(file)
+                    unprocessed.append(file)
                     return None
 
                 key_hash = hashlib.md5(key.encode('utf-8')).hexdigest()
@@ -92,7 +93,7 @@ async def process_file(file):
                 non_videos.append(file)
 
     except Exception as ex:
-        exceptions.append(file)
+        unprocessed.append(file)
         # logger.exception("Exception processing file: %s", file)
         return None
 
@@ -143,7 +144,7 @@ if __name__ == "__main__":
             else:
                 logger.debug("%s", dupe)
 
-    if len(exceptions):
+    if len(unprocessed):
         logger.debug("Couldn't process:")
-        for dupe in exceptions:
+        for dupe in unprocessed:
             logger.debug(dupe)
