@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.5
 import hashlib
 import logging
 import os
@@ -67,6 +67,12 @@ async def process_file(file):
 
                     if 'country' in file_info:
                         key += str(file_info['country'])
+
+                    if 'year' in file_info:
+                        key += str(file_info['year'])
+
+                    if 'edition' in file_info:
+                        key += str(file_info['edition'])
 
                 elif file_info['type'] == 'movie':
                     key = file_info['title']
