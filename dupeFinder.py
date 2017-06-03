@@ -36,6 +36,9 @@ files = {}
 dupes = {}
 unprocessed = []
 non_videos = []
+episodes = 0
+movies = 0
+dupe_count = 0
 
 
 ############################################################
@@ -43,6 +46,8 @@ non_videos = []
 ############################################################
 
 async def process_file(file):
+    global movies, episodes
+
     try:
         file_info = guessit(file.__str__())
 
@@ -90,10 +95,15 @@ async def process_file(file):
                 if key_hash not in files:
                     # not a duplicate video
                     files[key_hash] = file
+                    if file_info['type'] == 'episode':
+                        episodes += 1
+                    elif file_info['type'] == 'movie':
+                        movies += 1
                 else:
                     # duplicate video
-                    logger.debug("Duplicate video found: %s", file)
                     dupes[file] = files[key_hash]
+                    logger.debug("Duplicate found: %s", file)
+                    logger.debug("Duplicate found: %s", files[key_hash])
 
             else:
                 non_videos.append(file)
@@ -134,8 +144,12 @@ if __name__ == "__main__":
 
     logger.debug("Finished looking for dupes!\n")
     logger.debug("Time taken: %d seconds", time_taken)
-    logger.debug("Skipped non videos: %d", len(non_videos))
     logger.debug("Videos scanned: %d", len(files) + len(dupes))
+    logger.debug("Skipped non videos: %d", len(non_videos))
+    if movies:
+        logger.debug("Movies: %d", movies)
+    if episodes:
+        logger.debug("Episodes: %d", episodes)
     logger.debug("Non duplicates: %d", len(files))
     logger.debug("Duplicates: %d\n", len(dupes))
 
