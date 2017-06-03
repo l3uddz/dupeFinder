@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # required pip modules:
 # click==6.7
-# guessit==2.1.1
+# guessit==2.1.4
 import hashlib
 import multiprocessing
 import os
