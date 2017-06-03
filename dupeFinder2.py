@@ -5,7 +5,6 @@
 import hashlib
 import multiprocessing
 import os
-import pathlib
 import timeit
 from functools import partial
 from multiprocessing import Pool, Manager
@@ -96,9 +95,8 @@ def dupefinder(path, list, workers, save_dupes, save_skipped, save_unprocessed, 
         lines_wrote = 0
         with open(save_dupes, 'w') as f:
             for v in dupes_hash_map.values():
-                if isinstance(v, str):
-                    f.write(v + '\n')
-                    lines_wrote += 1
+                f.write(str(v) + '\n')
+                lines_wrote += 1
             click.echo("Saved %d dupes to %s" % (lines_wrote, save_dupes))
             f.close()
 
@@ -107,9 +105,8 @@ def dupefinder(path, list, workers, save_dupes, save_skipped, save_unprocessed, 
         lines_wrote = 0
         with open(save_skipped, 'w') as f:
             for v in skipped_map:
-                if isinstance(v, str):
-                    f.write(v + '\n')
-                    lines_wrote += 1
+                f.write(str(v) + '\n')
+                lines_wrote += 1
             click.echo("Saved %d skipped files to %s" % (lines_wrote, save_skipped))
             f.close()
 
@@ -118,9 +115,8 @@ def dupefinder(path, list, workers, save_dupes, save_skipped, save_unprocessed, 
         lines_wrote = 0
         with open(save_unprocessed, 'w') as f:
             for v in unprocessed_map:
-                if isinstance(v, str):
-                    f.write(v + '\n')
-                    lines_wrote += 1
+                f.write(str(v) + '\n')
+                lines_wrote += 1
             click.echo("Saved %d unprocessed files to %s" % (lines_wrote, save_unprocessed))
             f.close()
 
@@ -148,7 +144,7 @@ def load_file_list(path_list):
 def build_file_list(folder):
     for path, subdirs, files in os.walk(folder):
         for name in files:
-            file = pathlib.PurePath(path, name)
+            file = os.path.join(path, name)
             file_list.append(file)
 
 
@@ -157,11 +153,11 @@ whitelist_containers = ['m4v', 'ts']
 
 def process_file(path, hash_map, dupes, unprocessed, skipped, namespace):
     try:
-        file_info = guessit(path.__str__())
+        file_info = guessit(path)
 
         if file_info is not None:
-            if ('mimetype' in file_info and 'video/' in file_info['mimetype']) or 'video_codec' in file_info or (
-                            'container' in file_info and file_info['container'] in whitelist_containers):
+            if ('mimetype' in file_info and 'video/' in file_info['mimetype']) or (
+                    'container' in file_info and file_info['container'] in whitelist_containers):
                 namespace.videos += 1
                 if file_info['type'] == 'episode':
                     if 'alternative_title' in file_info:
