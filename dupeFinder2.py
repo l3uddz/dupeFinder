@@ -152,12 +152,16 @@ def build_file_list(folder):
             file_list.append(file)
 
 
+whitelist_containers = ['m4v', 'ts']
+
+
 def process_file(path, hash_map, dupes, unprocessed, skipped, namespace):
     try:
         file_info = guessit(path.__str__())
 
         if file_info is not None:
-            if 'mimetype' in file_info and 'video/' in file_info['mimetype']:
+            if ('mimetype' in file_info and 'video/' in file_info['mimetype']) or 'video_codec' in file_info or (
+                            'container' in file_info and file_info['container'] in whitelist_containers):
                 namespace.videos += 1
                 if file_info['type'] == 'episode':
                     if 'alternative_title' in file_info:
