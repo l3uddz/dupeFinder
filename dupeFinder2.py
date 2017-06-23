@@ -6,6 +6,7 @@ import hashlib
 import multiprocessing
 import os
 import timeit
+import uuid
 from functools import partial
 from multiprocessing import Pool, Manager
 
@@ -95,8 +96,9 @@ def dupefinder(path, list, workers, save_dupes, save_skipped, save_unprocessed, 
         lines_wrote = 0
         with open(save_dupes, 'w') as f:
             for v in dupes_hash_map.values():
-                f.write(str(v) + '\n')
-                lines_wrote += 1
+                if '.' in str(v):
+                    f.write(str(v) + '\n')
+                    lines_wrote += 1
             click.echo("Saved %d dupes to %s" % (lines_wrote, save_dupes))
             f.close()
 
@@ -105,8 +107,9 @@ def dupefinder(path, list, workers, save_dupes, save_skipped, save_unprocessed, 
         lines_wrote = 0
         with open(save_skipped, 'w') as f:
             for v in skipped_map:
-                f.write(str(v) + '\n')
-                lines_wrote += 1
+                if '.' in str(v):
+                    f.write(str(v) + '\n')
+                    lines_wrote += 1
             click.echo("Saved %d skipped files to %s" % (lines_wrote, save_skipped))
             f.close()
 
@@ -115,8 +118,9 @@ def dupefinder(path, list, workers, save_dupes, save_skipped, save_unprocessed, 
         lines_wrote = 0
         with open(save_unprocessed, 'w') as f:
             for v in unprocessed_map:
-                f.write(str(v) + '\n')
-                lines_wrote += 1
+                if '.' in str(v):
+                    f.write(str(v) + '\n')
+                    lines_wrote += 1
             click.echo("Saved %d unprocessed files to %s" % (lines_wrote, save_unprocessed))
             f.close()
 
@@ -157,7 +161,7 @@ def process_file(path, hash_map, dupes, unprocessed, skipped, namespace):
 
         if file_info is not None:
             if ('mimetype' in file_info and 'video/' in file_info['mimetype']) or (
-                    'container' in file_info and file_info['container'] in whitelist_containers):
+                            'container' in file_info and file_info['container'] in whitelist_containers):
                 namespace.videos += 1
                 if file_info['type'] == 'episode':
                     if 'alternative_title' in file_info:
@@ -215,7 +219,7 @@ def process_file(path, hash_map, dupes, unprocessed, skipped, namespace):
                         namespace.movies += 1
                 else:
                     # duplicate video
-                    dupes[key_hash + path] = path
+                    dupes[key_hash + str(uuid.uuid4())] = path
                     namespace.dupe_count += 1
                     click.echo("Duplicate found: %s" % path)
                     if key_hash not in dupes:
